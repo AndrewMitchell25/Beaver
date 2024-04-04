@@ -1,19 +1,24 @@
 import typer
 import jsonschema
 import json
+from typing_extensions import Annotated
 
 app = typer.Typer()
 
-
-
-def get_id_and_name():
-    with open("schema.json") as schema_file:
-                schema_name = json.load(schema_file)["title"]
+def get_name():
+    try:
+        with open("schema.json") as schema_file:
+            return json.load(schema_file)["title"]
+    except:
+        print("No database found")
+        
+def get_id():
+    schema_name = get_name()
     try:
         with open("db.json") as file:
-            return json.load(file)[schema_name][-1]["id"], schema_name
+            return json.load(file)[schema_name][-1]["id"]
     except:
-        return 1, schema_name
+        return 1
 
 def validate(data):
     with open("schema.json") as file:
@@ -26,7 +31,8 @@ def validate(data):
 
 @app.command()
 def create(data):
-    id, schema_name = get_id_and_name()
+    id = get_id()
+    schema_name = get_name()
     data["id"] = id
     validate(data)
     try:
@@ -36,6 +42,19 @@ def create(data):
     except FileNotFoundError:
         pass
     
+@app.command()
+def read(all:bool = False, id:int = False):
+    if all:
+       with open("db.json") as file:
+           db = json.load(file)
+           print(db)
+    elif id:
+        schema_name = get_name()
+        with open("db.json") as file:
+           db = json.load(file)
+        print(db[schema_name][id - 1])
+    else:
+        print("ERROR")
 
 if __name__ == '__main__':
     app()
