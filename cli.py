@@ -60,9 +60,13 @@ def search(value:str = typer.Option(), keyword:str = False, update:int = False):
             json.dump(db, file, indent=4)
         else:
             for record in db:
-                if keyword and (record[keyword] == value or value in record[keyword]):
-                    print(record)
-                
+                if keyword:
+                    if record[keyword] == value or (type(record[keyword]) == list and value in record[keyword]):
+                        print(record)
+                else:
+                    for val in record.values():
+                        if val == value or (type(val) == list and value in val):
+                            print(record)
 
 if __name__ == '__main__':
     app()
