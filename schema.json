@@ -4,13 +4,13 @@
     "type": "object",
     "properties": {
         "id": {
-        "type": "integer"
+            "type": "integer"
         },
         "title": {
-        "type": "string"
+            "type": "string"
         },
         "content": {
-        "type": "string"
+            "type": "string"
         },
         "tags": {
             "type": "array",
