@@ -4,19 +4,11 @@ import json
 from rich.progress import track
 
 app = typer.Typer()
-
-def get_name():
-    try:
-        with open("schema.json") as schema_file:
-            return json.load(schema_file)["title"]
-    except:
-        print("No database found")
         
 def get_id():
-    schema_name = get_name()
     try:
         with open("db.json") as file:
-            return json.load(file)[schema_name][-1]["id"]
+            return json.load(file)[-1]["id"]
     except:
         return 1
 
@@ -32,13 +24,12 @@ def validate(data):
 @app.command()
 def create(data):
     id = get_id()
-    schema_name = get_name()
     data["id"] = id
     validate(data)
     try:
         with open("db.json", 'r') as file:
             db = json.load(file)
-            db[schema_name].append(data)
+            db.append(data)
     except FileNotFoundError:
         pass
     
@@ -49,22 +40,28 @@ def read(all:bool = False, id:int = False):
            db = json.load(file)
            print(db)
     elif id:
-        schema_name = get_name()
         with open("db.json") as file:
            db = json.load(file)
-        print(db[schema_name][id - 1])
+        print(db[id - 1])
     else:
         print("ERROR")
 
 @app.command()
 def search(value:str = typer.Option(), keyword:str = False, update:int = False):
-    schema_name = get_name()
     with open("db.json") as file:
         db = json.load(file)
-    for value in track(range(100), description="Searching..."):
-        for record in db[schema_name]:
-            if keyword and (record[keyword] == value or value in record[keyword]):
-                print(record)
+        #NEED TO TEST
+        if update:
+            for record in db:
+                if record["id"] == update:
+                    record["id"] = json.loads(value)
+                    break
+            file.seek(0)
+            json.dump(db, file, indent=4)
+        else:
+            for record in db:
+                if keyword and (record[keyword] == value or value in record[keyword]):
+                    print(record)
                 
 
 if __name__ == '__main__':
