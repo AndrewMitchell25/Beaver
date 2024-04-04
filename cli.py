@@ -1,7 +1,7 @@
 import typer
 import jsonschema
 import json
-from typing_extensions import Annotated
+from rich.progress import track
 
 app = typer.Typer()
 
@@ -55,6 +55,17 @@ def read(all:bool = False, id:int = False):
         print(db[schema_name][id - 1])
     else:
         print("ERROR")
+
+@app.command()
+def search(value:str = typer.Option(), keyword:str = False, update:int = False):
+    schema_name = get_name()
+    with open("db.json") as file:
+        db = json.load(file)
+    for value in track(range(100), description="Searching..."):
+        for record in db[schema_name]:
+            if keyword and (record[keyword] == value or value in record[keyword]):
+                print(record)
+                
 
 if __name__ == '__main__':
     app()
