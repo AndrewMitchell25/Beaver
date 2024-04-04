@@ -4,14 +4,17 @@ import json
 
 app = typer.Typer()
 
-def get_id():
+
+
+def get_id_and_name():
+    with open("schema.json") as schema_file:
+                schema_name = json.load(schema_file)["title"]
     try:
         with open("db.json") as file:
-            return json.load(file)["counter"]
+            return json.load(file)[schema_name][-1]["id"], schema_name
     except:
-        return 1
+        return 1, schema_name
 
-@app.command()
 def validate(data):
     with open("schema.json") as file:
         schema = json.load(file)
@@ -23,9 +26,16 @@ def validate(data):
 
 @app.command()
 def create(data):
-    id = get_id()
+    id, schema_name = get_id_and_name()
     data["id"] = id
     validate(data)
+    try:
+        with open("db.json", 'r') as file:
+            db = json.load(file)
+            db[schema_name].append(data)
+    except FileNotFoundError:
+        pass
+    
 
 if __name__ == '__main__':
     app()
