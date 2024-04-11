@@ -1,19 +1,16 @@
 import typer
 import jsonschema
 import json
-from typing import Optional
+from rich.progress import track
 
 app = typer.Typer()
 
-@app.command()
-def get_id_and_name():
-    with open("schema.json") as schema_file:
-                schema_name = json.load(schema_file)["title"]
+def get_id():
     try:
         with open("db.json") as file:
-            return json.load(file)[-1]["id"] + 1, schema_name
+            return json.load(file)[-1]["id"] + 1
     except:
-        return 1, schema_name
+        return 1
 
 @app.command()
 def validate(data):
@@ -30,7 +27,7 @@ def validate(data):
 @app.command()
 def create(data: str):
     data = json.loads(data)
-    id, schema_name = get_id_and_name()
+    id = get_id()
     data["id"] = id
     if not validate(data):
         exit()
@@ -69,7 +66,7 @@ def search(value:str = typer.Option(), keyword: str=None, update:int=0):
     with open("db.json") as file:
         db = json.load(file)
     if update:
-        for record in db:
+        for record in track(db, description="Searching..."):
             if record["id"] == update:
                 record = json.loads(value)
                 record["id"] = update
@@ -81,9 +78,9 @@ def search(value:str = typer.Option(), keyword: str=None, update:int=0):
         with open('db.json', 'w') as file:
             json.dump(db, file, indent=4)
     else:
-        for record in db:
+        for record in track(db, description="Searching..."):
             if keyword:
-                if record[keyword] == value or (type(record[keyword]) == list and value in record[keyword]):
+                if str(record[keyword]) == value or (type(record[keyword]) == list and value in record[keyword]):
                     print(record)
             else:
                 for val in record.values():
