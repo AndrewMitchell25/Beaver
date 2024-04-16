@@ -59,22 +59,24 @@ def read(all:bool = False, id:int = False):
     elif id:
         with open('db.json', 'r') as file:
             db = json.load(file)
-        print(db[id-1])
+        for index, record in enumerate(db):
+            if record["id"] == id:
+                print(record)
     else:
-        print("ERROR")
+        print("Must select all or one id")
 
 @app.command()
 def search(value:str = typer.Option(), keyword: str=None, update:int=0):
     with open("db.json") as file:
         db = json.load(file)
     if update:
-        for record in db:
+        for index, record in enumerate(db):
             if record["id"] == update:
                 record = json.loads(value)
                 record["id"] = update
                 if not validate(record):
                     exit()
-                db[update-1] = record
+                db[index] = record
                 break
 
         with open('db.json', 'w') as file:
@@ -86,7 +88,7 @@ def search(value:str = typer.Option(), keyword: str=None, update:int=0):
                     print(record)
             else:
                 for val in record.values():
-                    if val == value or (type(val) == list and value in val):
+                    if str(val) == value or (type(val) == list and value in val) or (type(val) == str and val.find(value) != -1):
                         print(record)
             
 @app.command()
@@ -112,7 +114,6 @@ def delete(id:int = False, all:bool = False):
                 for key, item in enumerate(file_data):
                     if item['id'] == id:
                         file_data = file_data[:key] + file_data[key+1:]
-                        print(file_data)
                         found = True
                         break
 
@@ -126,7 +127,7 @@ def delete(id:int = False, all:bool = False):
         except FileNotFoundError:
             pass
     else:
-        print("ERROR")
+        print("Must delete all or just one ID")
 
 if __name__ == '__main__':
     app()
